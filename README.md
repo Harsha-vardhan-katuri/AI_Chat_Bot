@@ -48,4 +48,4 @@ streamlit run app.py
 **Harsha Vardhan Katuri**  
 
 ## 🔗 License  
-This project is licensed under the **MIT License**.  
+This project is licensed under the **MIT License**.   
