@@ -6,10 +6,9 @@ from nltk.tokenize import word_tokenize
 
 nltk.download('punkt')
 nltk.download('stopwords')
-import torch
 
 
-chatbot = pipeline("text-generation", model="distilgpt2")
+chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
 
 def healthcare_chatbot(user_input):
     if "symptom" in user_input:
@@ -25,7 +24,7 @@ def healthcare_chatbot(user_input):
     elif "Cold & Nasal Congestion" in user_input:
         return "If you have a mild cold with a runny nose, you can take Cetirizine (Cetzine or Okacet) and try steam inhalation. However, if symptoms persist for more than a week or are accompanied by high fever, consult a doctor. "
     else:
-        response = chatbot(user_input, max_length=300, num_return_sequences=1)
+        response = chatbot(user_input, max_length=200, num_return_sequences=1)
         return response[0]['generated_text']
 
 
