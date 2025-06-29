@@ -42,7 +42,7 @@ streamlit run app.py
 - Click Submit and receive an AI-generated response.
 
 🚀 Deploy
-You can try the chatbot live here: [App Link ](https:/aichatbot-scmfkmwqvmvzdj9ayyzp8c.streamlit.app/)
+You can try the chatbot live here: [App Link ](https://aichatbot-scmfkmwqvmvzdj9ayyzp8c.streamlit.app/)
 
 ## Notes  
 ⚠️ This chatbot provides basic healthcare guidance and should not be used as a replacement for professional medical advice. Always consult a qualified doctor for serious health concerns.
