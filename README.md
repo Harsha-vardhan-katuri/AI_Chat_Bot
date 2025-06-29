@@ -39,7 +39,10 @@ streamlit run app.py
 ## Usage  
 - Open your browser and go to **[http://localhost:8501/](http://localhost:8501/)**.  
 - Type your healthcare-related query in the text box.  
-- Click Submit and receive an AI-generated response.  
+- Click Submit and receive an AI-generated response.
+
+🚀 Deploy
+You can try the chatbot live here: [App Link ](https:/aichatbot-scmfkmwqvmvzdj9ayyzp8c.streamlit.app/)
 
 ## Notes  
 ⚠️ This chatbot provides basic healthcare guidance and should not be used as a replacement for professional medical advice. Always consult a qualified doctor for serious health concerns.
