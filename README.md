@@ -1,7 +1,9 @@
-# AI Powered Health Assistant 🤖  
+# AI Powered Health Assistant 🤖
 
-## Overview  
-The AI Chatbot is a healthcare assistant built using Python, Streamlit, and NLP models. It provides responses for medical-related queries such as symptoms, appointments, and medications. It also leverages DistilGPT-2 for generating AI-driven responses.  
+## Overview  The AI Chatbot is a healthcare assistant built using Python,
+Streamlit, and NLP models. It provides responses for medical-related queries
+such as symptoms, appointments, and medications. It also leverages DistilGPT-2
+for generating AI-driven responses.  
 
 ## Features  
 ✅ Provides predefined responses for common healthcare-related queries.  
