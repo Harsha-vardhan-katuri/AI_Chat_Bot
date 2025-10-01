@@ -37,12 +37,9 @@ def main():
     if "history" not in st.session_state:
         st.session_state.history = []
 
-    # Page layout: left = chat history, right = input & options
-    col1, col2 = st.columns([1.2, 2.5])
-
-    # Left side: Chat History
-    with col1:
-        st.subheader("💬 Chat History")
+    # Sidebar toggle for chat history
+    with st.sidebar:
+        st.markdown("### ☰ Chat History")  # three-line button look
         if st.session_state.history:
             for role, text in st.session_state.history:
                 if role == "User":
@@ -52,45 +49,45 @@ def main():
         else:
             st.info("No conversation yet. Start chatting!")
 
-    # Right side: Input + Options
-    with col2:
-        st.title("🩺 Healthcare Assistant Chatbot")
+    # Main layout
+    st.title("🩺 Healthcare Assistant Chatbot")
 
-        # Quick reply buttons
-        st.subheader("Quick Options")
-        colA, colB, colC = st.columns(3)
-        with colA:
-            if st.button("🤒 Symptoms"):
-                st.session_state.history.append(("User", "symptom"))
-                st.session_state.history.append(("Assistant", healthcare_chatbot("symptom")))
-        with colB:
-            if st.button("💊 Medication"):
-                st.session_state.history.append(("User", "medication"))
-                st.session_state.history.append(("Assistant", healthcare_chatbot("medication")))
-        with colC:
-            if st.button("📅 Appointment"):
-                st.session_state.history.append(("User", "appointment"))
-                st.session_state.history.append(("Assistant", healthcare_chatbot("appointment")))
+    # Quick reply buttons
+    st.subheader("Quick Options")
+    colA, colB, colC = st.columns(3)
+    with colA:
+        if st.button("🤒 Symptoms"):
+            st.session_state.history.append(("User", "symptom"))
+            st.session_state.history.append(("Assistant", healthcare_chatbot("symptom")))
+    with colB:
+        if st.button("💊 Medication"):
+            st.session_state.history.append(("User", "medication"))
+            st.session_state.history.append(("Assistant", healthcare_chatbot("medication")))
+    with colC:
+        if st.button("📅 Appointment"):
+            st.session_state.show_appointment = True  # flag to show form
 
-        # User input
-        user_input = st.text_input("💬 Type your query:")
-        if st.button("Submit"):
-            if user_input:
-                st.session_state.history.append(("User", user_input))
-                with st.spinner("Processing your query..."):
-                    response = healthcare_chatbot(user_input)
-                st.session_state.history.append(("Assistant", response))
-            else:
-                st.warning("⚠️ Please enter a message to get a response.")
+    # User input
+    user_input = st.text_input("💬 Type your query:")
+    if st.button("Submit"):
+        if user_input:
+            st.session_state.history.append(("User", user_input))
+            with st.spinner("Processing your query..."):
+                response = healthcare_chatbot(user_input)
+            st.session_state.history.append(("Assistant", response))
+        else:
+            st.warning("⚠️ Please enter a message to get a response.")
 
-        # Appointment booking form (only one kept)
-        with st.expander("📅 Book an Appointment"):
-            appointment_date = st.date_input("Select appointment date")
-            appointment_time = st.time_input("Select appointment time")
-            if st.button("Confirm Appointment"):
-                st.session_state.history.append(
-                    ("Assistant", f"✅ Your appointment is booked for {appointment_date} at {appointment_time}.")
-                )
+    # Appointment booking form (only appears after clicking Appointment)
+    if st.session_state.get("show_appointment", False):
+        st.subheader("📅 Book an Appointment")
+        appointment_date = st.date_input("Select appointment date")
+        appointment_time = st.time_input("Select appointment time")
+        if st.button("Confirm Appointment"):
+            st.session_state.history.append(
+                ("Assistant", f"✅ Your appointment is booked for {appointment_date} at {appointment_time}.")
+            )
+            st.session_state.show_appointment = False  # hide after booking
 
 
 if __name__ == "__main__":
