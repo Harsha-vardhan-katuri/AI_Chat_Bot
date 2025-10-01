@@ -54,5 +54,3 @@ You can try the chatbot live here: [App Link ](https://aichatbot-scmfkmwqvmvzdj9
 
 ## 🔗 License  
 This project is licensed under the **MIT License**.
-
-
