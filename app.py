@@ -3,6 +3,7 @@ import nltk
 from transformers import pipeline
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from datetime import datetime
 
 # Download NLTK resources
 nltk.download('punkt')
@@ -29,43 +30,45 @@ def healthcare_chatbot(user_input):
         response = chatbot(user_input, max_length=200, num_return_sequences=1)
         return response[0]['generated_text']
 
-
 def main():
     st.set_page_config(page_title="Healthcare Assistant Chatbot", layout="wide")
 
-    # Initialize chat history
+    # Initialize states
     if "history" not in st.session_state:
         st.session_state.history = []
+    if "show_appointment" not in st.session_state:
+        st.session_state.show_appointment = False
 
-    # Sidebar toggle for chat history
+    # Sidebar - Chat History (toggle style)
     with st.sidebar:
-        st.markdown("### ☰ Chat History")  # three-line button look
+        st.markdown("### ☰ Chat History")
         if st.session_state.history:
             for role, text in st.session_state.history:
                 if role == "User":
                     st.markdown(f"👤 **You:** {text}")
                 else:
-                    st.markdown(f"🤖 **Healthcare Assistant:** {text}")
+                    st.markdown(f"🤖 **Assistant:** {text}")
         else:
             st.info("No conversation yet. Start chatting!")
 
-    # Main layout
+    # Main Title
     st.title("🩺 Healthcare Assistant Chatbot")
 
     # Quick reply buttons
-    st.subheader("Quick Options")
     colA, colB, colC = st.columns(3)
     with colA:
         if st.button("🤒 Symptoms"):
-            st.session_state.history.append(("User", "symptom"))
-            st.session_state.history.append(("Assistant", healthcare_chatbot("symptom")))
+            user_msg = "symptom"
+            st.session_state.history.append(("User", user_msg))
+            st.session_state.history.append(("Assistant", healthcare_chatbot(user_msg)))
     with colB:
         if st.button("💊 Medication"):
-            st.session_state.history.append(("User", "medication"))
-            st.session_state.history.append(("Assistant", healthcare_chatbot("medication")))
+            user_msg = "medication"
+            st.session_state.history.append(("User", user_msg))
+            st.session_state.history.append(("Assistant", healthcare_chatbot(user_msg)))
     with colC:
         if st.button("📅 Appointment"):
-            st.session_state.show_appointment = True  # flag to show form
+            st.session_state.show_appointment = True  # Show booking form
 
     # User input
     user_input = st.text_input("💬 Type your query:")
@@ -78,17 +81,33 @@ def main():
         else:
             st.warning("⚠️ Please enter a message to get a response.")
 
-    # Appointment booking form (only appears after clicking Appointment)
-    if st.session_state.get("show_appointment", False):
+    # Appointment booking form
+    if st.session_state.show_appointment:
         st.subheader("📅 Book an Appointment")
-        appointment_date = st.date_input("Select appointment date")
-        appointment_time = st.time_input("Select appointment time")
+        appointment_date = st.date_input("Select appointment date", datetime.today())
+        appointment_time = st.time_input("Select appointment time", datetime.now().time())
         if st.button("Confirm Appointment"):
-            st.session_state.history.append(
-                ("Assistant", f"✅ Your appointment is booked for {appointment_date} at {appointment_time}.")
-            )
-            st.session_state.show_appointment = False  # hide after booking
+            confirmation = f"✅ Your appointment is booked for {appointment_date} at {appointment_time}."
+            st.session_state.history.append(("Assistant", confirmation))
+            st.session_state.show_appointment = False  # Hide after booking
 
+    # Display conversation in chat bubble style
+    st.subheader("💬 Conversation")
+    for role, text in st.session_state.history:
+        if role == "User":
+            st.markdown(
+                f"<div style='text-align: right; background-color:#DCF8C6; "
+                f"border-radius: 10px; padding: 8px; margin: 4px; display:inline-block;'>"
+                f"👤 <b>You:</b> {text}</div><br>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"<div style='text-align: left; background-color:#E6E6E6; "
+                f"border-radius: 10px; padding: 8px; margin: 4px; display:inline-block;'>"
+                f"🤖 <b>Assistant:</b> {text}</div><br>",
+                unsafe_allow_html=True,
+            )
 
 if __name__ == "__main__":
     main()
