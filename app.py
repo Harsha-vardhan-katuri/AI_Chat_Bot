@@ -38,18 +38,24 @@ def main():
         st.session_state.history = []
     if "show_appointment" not in st.session_state:
         st.session_state.show_appointment = False
+    if "show_history" not in st.session_state:
+        st.session_state.show_history = False
 
-    # Sidebar - Chat History (toggle style)
+    # Sidebar - toggle like ChatGPT
     with st.sidebar:
-        st.markdown("### ☰ Chat History")
-        if st.session_state.history:
-            for role, text in st.session_state.history:
-                if role == "User":
-                    st.markdown(f"👤 **You:** {text}")
-                else:
-                    st.markdown(f"🤖 **Assistant:** {text}")
-        else:
-            st.info("No conversation yet. Start chatting!")
+        if st.button("☰ Chats"):
+            st.session_state.show_history = not st.session_state.show_history
+
+        if st.session_state.show_history:
+            st.markdown("### Chat History")
+            if st.session_state.history:
+                for role, text in st.session_state.history:
+                    if role == "User":
+                        st.markdown(f"👤 **You:** {text}")
+                    else:
+                        st.markdown(f"🤖 **Assistant:** {text}")
+            else:
+                st.info("No conversation yet. Start chatting!")
 
     # Main Title
     st.title("🩺 Healthcare Assistant Chatbot")
@@ -91,20 +97,20 @@ def main():
             st.session_state.history.append(("Assistant", confirmation))
             st.session_state.show_appointment = False  # Hide after booking
 
-    # Display conversation in chat bubble style
+    # Conversation area with dark bubbles
     st.subheader("💬 Conversation")
     for role, text in st.session_state.history:
         if role == "User":
             st.markdown(
-                f"<div style='text-align: right; background-color:#DCF8C6; "
-                f"border-radius: 10px; padding: 8px; margin: 4px; display:inline-block;'>"
+                f"<div style='text-align: right; background-color:#222; "
+                f"color:white; border-radius: 10px; padding: 8px; margin: 4px; display:inline-block;'>"
                 f"👤 <b>You:</b> {text}</div><br>",
                 unsafe_allow_html=True,
             )
         else:
             st.markdown(
-                f"<div style='text-align: left; background-color:#E6E6E6; "
-                f"border-radius: 10px; padding: 8px; margin: 4px; display:inline-block;'>"
+                f"<div style='text-align: left; background-color:#333; "
+                f"color:white; border-radius: 10px; padding: 8px; margin: 4px; display:inline-block;'>"
                 f"🤖 <b>Assistant:</b> {text}</div><br>",
                 unsafe_allow_html=True,
             )
