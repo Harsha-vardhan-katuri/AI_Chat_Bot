@@ -22,7 +22,7 @@ def healthcare_chatbot(user_input):
     elif "fever" in user_input.lower():
         return "If the fever is below 102°F, you can take Paracetamol or Dolo 650. If it exceeds 102°F, consult a doctor immediately."
     elif "cough" in user_input.lower():
-        return "For a mild dry cough, try honey, warm water, or Benadryl. If it persists more than a week, consult a doctor."
+        return "For a mild dry cough, try honey, warm water, or Benadryl. If it persists for more than a week, consult a doctor."
     elif "cold" in user_input.lower() or "congestion" in user_input.lower():
         return "For a mild cold, take Cetirizine and try steam inhalation. If it persists more than a week, consult a doctor."
     else:
@@ -64,10 +64,12 @@ def main():
     colA, colB, colC = st.columns(3)
     with colA:
         if st.button("🤒 Symptoms"):
+            st.session_state.show_appointment = False
             st.session_state.history.append(("User", "symptom"))
             st.session_state.history.append(("Assistant", healthcare_chatbot("symptom")))
     with colB:
         if st.button("💊 Medication"):
+            st.session_state.show_appointment = False
             st.session_state.history.append(("User", "medication"))
             st.session_state.history.append(("Assistant", healthcare_chatbot("medication")))
     with colC:
@@ -78,6 +80,9 @@ def main():
     user_input = st.text_input("💬 Type your query:")
     if st.button("Submit"):
         if user_input:
+            # Reset appointment form when a new query is submitted
+            st.session_state.show_appointment = False
+
             st.session_state.history.append(("User", user_input))
             with st.spinner("Processing your query..."):
                 response = healthcare_chatbot(user_input)
@@ -85,7 +90,7 @@ def main():
         else:
             st.warning("⚠️ Please enter a message to get a response.")
 
-    # Appointment booking form
+    # Appointment booking form (only appears after clicking Appointment)
     if st.session_state.get("show_appointment", False):
         st.subheader("📅 Book an Appointment")
         appointment_date = st.date_input("Select appointment date")
@@ -94,13 +99,14 @@ def main():
             st.session_state.history.append(
                 ("Assistant", f"✅ Your appointment is booked for {appointment_date} at {appointment_time}.")
             )
-            st.session_state.show_appointment = False
+            st.session_state.show_appointment = False  # hide after booking
 
-        # Conversation area with scrollable chat box (ChatGPT style)
+    # Conversation area with scrollable chat box (ChatGPT style)
     st.subheader("💬 Conversation")
 
     st.markdown(
-        "<div style='max-height:400px; overflow-y:auto; padding:10px; border:1px solid #444; border-radius:10px;'>",
+        "<div style='max-height:400px; overflow-y:auto; padding:10px; "
+        "border:1px solid #444; border-radius:10px; background-color:black;'>",
         unsafe_allow_html=True
     )
 
