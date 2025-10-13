@@ -2,3 +2,5 @@ streamlit
 transformers
 nltk
 torch
+SpeechRecognition
+PyAudio
