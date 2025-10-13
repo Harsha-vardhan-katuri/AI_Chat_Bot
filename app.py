@@ -1,5 +1,6 @@
 import streamlit as st
 import nltk
+import speech_recognition as sr
 from transformers import pipeline
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -22,13 +23,29 @@ def healthcare_chatbot(user_input):
     elif "fever" in user_input.lower():
         return "If the fever is below 102°F, you can take Paracetamol or Dolo 650. If it exceeds 102°F, consult a doctor immediately."
     elif "cough" in user_input.lower():
-        return "For a mild dry cough, try honey, warm water, or Benadryl. If it persists for more than a week, consult a doctor."
+        return "For a mild dry cough, try honey, warm water, or Benadryl. If it persists more than a week, consult a doctor."
     elif "cold" in user_input.lower() or "congestion" in user_input.lower():
         return "For a mild cold, take Cetirizine and try steam inhalation. If it persists more than a week, consult a doctor."
     else:
         response = chatbot(user_input, max_length=200, num_return_sequences=1)
         return response[0]['generated_text']
 
+# Voice input function
+def voice_input():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.info("🎤 Listening... please speak now.")
+        audio = recognizer.listen(source, phrase_time_limit=5)
+    try:
+        text = recognizer.recognize_google(audio)
+        st.success(f"🗣 You said: {text}")
+        return text
+    except sr.UnknownValueError:
+        st.warning("❌ Sorry, I couldn’t understand. Try again.")
+        return ""
+    except sr.RequestError:
+        st.error("⚠️ Speech recognition service error.")
+        return ""
 
 def main():
     st.set_page_config(page_title="Healthcare Assistant Chatbot", layout="wide")
@@ -64,33 +81,42 @@ def main():
     colA, colB, colC = st.columns(3)
     with colA:
         if st.button("🤒 Symptoms"):
-            st.session_state.show_appointment = False
             st.session_state.history.append(("User", "symptom"))
             st.session_state.history.append(("Assistant", healthcare_chatbot("symptom")))
     with colB:
         if st.button("💊 Medication"):
-            st.session_state.show_appointment = False
             st.session_state.history.append(("User", "medication"))
             st.session_state.history.append(("Assistant", healthcare_chatbot("medication")))
     with colC:
         if st.button("📅 Appointment"):
             st.session_state.show_appointment = True  # flag to show form
 
-    # User input
-    user_input = st.text_input("💬 Type your query:")
+    # Voice and text input
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        user_input = st.text_input("💬 Type your query or use voice:")
+    with col2:
+        if st.button("🎤 Speak"):
+            text = voice_input()
+            if text:
+                st.session_state["last_voice_text"] = text
+                st.rerun()
+
+    # If voice text was captured, fill it into the input box
+    if "last_voice_text" in st.session_state:
+        user_input = st.session_state["last_voice_text"]
+        del st.session_state["last_voice_text"]
+
     if st.button("Submit"):
         if user_input:
-            # Reset appointment form when a new query is submitted
-            st.session_state.show_appointment = False
-
             st.session_state.history.append(("User", user_input))
             with st.spinner("Processing your query..."):
                 response = healthcare_chatbot(user_input)
             st.session_state.history.append(("Assistant", response))
         else:
-            st.warning("⚠️ Please enter a message to get a response.")
+            st.warning("⚠️ Please enter or speak your message to get a response.")
 
-    # Appointment booking form (only appears after clicking Appointment)
+    # Appointment booking form
     if st.session_state.get("show_appointment", False):
         st.subheader("📅 Book an Appointment")
         appointment_date = st.date_input("Select appointment date")
@@ -99,21 +125,19 @@ def main():
             st.session_state.history.append(
                 ("Assistant", f"✅ Your appointment is booked for {appointment_date} at {appointment_time}.")
             )
-            st.session_state.show_appointment = False  # hide after booking
+            st.session_state.show_appointment = False
 
-    # Conversation area with scrollable chat box (ChatGPT style)
+    # Chat area (Dark theme)
     st.subheader("💬 Conversation")
-
     st.markdown(
-        "<div style='max-height:400px; overflow-y:auto; padding:10px; "
-        "border:1px solid #444; border-radius:10px; background-color:black;'>",
+        "<div style='max-height:400px; overflow-y:auto; padding:10px; border:1px solid #444; border-radius:10px; background-color:black;'>",
         unsafe_allow_html=True
     )
 
     for role, text in st.session_state.history:
         if role == "User":
             st.markdown(
-                f"<div style='text-align:right; background-color:#222; color:white; "
+                f"<div style='text-align:right; background-color:#1e1e1e; color:white; "
                 f"border-radius:10px; padding:8px; margin:6px; display:inline-block; max-width:70%;'>"
                 f"👤 <b>You:</b> {text}</div>",
                 unsafe_allow_html=True
