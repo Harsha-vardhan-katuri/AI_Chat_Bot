@@ -2,4 +2,3 @@ streamlit
 transformers
 nltk
 torch
-SpeechRecognition
