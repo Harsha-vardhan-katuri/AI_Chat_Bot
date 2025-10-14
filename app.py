@@ -31,7 +31,7 @@ def healthcare_chatbot(user_input):
     elif "pain" in user_input_lower:
         return "For mild pain, you may take Ibuprofen after food. Persistent pain requires medical advice."
     else:
-        response = chatbot(user_input, max_length=150, num_return_sequences=1)
+        response = chatbot(user_input, max_length=200, num_return_sequences=1)
         return response[0]['generated_text']
 
 # ------------------- Streamlit App -------------------
