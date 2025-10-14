@@ -13,9 +13,8 @@ try:
 except:
     nltk.download('stopwords')
 
-# Load model
+# Load model on CPU
 chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
-
 
 # --- Chatbot logic ---
 def healthcare_chatbot(user_input):
@@ -42,13 +41,13 @@ def main():
     # --- CSS styles ---
     st.markdown("""
         <style>
-        /* Page background */
+        /* Main chat area background */
         [data-testid="stAppViewContainer"] {
-            background-color: #f5f5f5;
+            background-color: #87CEEB;  /* Sky blue */
             color: black;
         }
 
-        /* Text input styling */
+        /* Chat input styling */
         .stTextInput > div > div > input {
             background-color: rgba(255, 255, 255, 0.9);
             color: black;
@@ -90,9 +89,10 @@ def main():
             text-align: left;
         }
 
-        /* Sidebar */
+        /* Sidebar: Chat history */
         [data-testid="stSidebar"] {
-            background-color: #e0e0e0;
+            background-color: #4B0082;  /* Dark violet */
+            color: white;
         }
         </style>
     """, unsafe_allow_html=True)
