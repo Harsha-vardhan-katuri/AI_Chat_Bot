@@ -14,7 +14,6 @@ except:
     nltk.download('stopwords')
 
 # ------------------- Load Chatbot Model -------------------
-# Force CPU to avoid PyTorch meta tensor issue
 chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
 
 # ------------------- Chatbot Logic -------------------
@@ -39,20 +38,40 @@ def healthcare_chatbot(user_input):
 def main():
     st.set_page_config(page_title="Healthcare Assistant Chatbot", layout="wide")
 
-    # ------------------- Apple/Dora AI Style CSS -------------------
+    # ------------------- Custom CSS -------------------
     st.markdown("""
     <style>
-    /* Main container: light Apple-style background */
+    /* Main container */
     [data-testid="stAppViewContainer"] {
-        background: linear-gradient(145deg, #f5f5f7, #e8e8eb);
+        background-color: #0d1b2a;  /* Dark blue */
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: black;
+        color: white;
         padding: 20px;
+    }
+
+    /* Header title */
+    .stTitle {
+        color: white;
     }
 
     /* Chat bubbles */
     .user-bubble {
-        background-color: #0a84ff;  /* iMessage blue */
+        background-color: #1f77b4; /* Dynamic blue */
+        color: white;
+        padding: 14px 18px;
+        border-radius: 22px;
+        max-width: 70%;
+        margin: 6px 0;
+        word-wrap: break-word;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transition: transform 0.2s ease;
+    }
+    .user-bubble:hover {
+        transform: scale(1.03);
+    }
+
+    .bot-bubble {
+        background-color: #3a506b; /* Darker bubble */
         color: white;
         padding: 14px 18px;
         border-radius: 22px;
@@ -60,17 +79,6 @@ def main():
         margin: 6px 0;
         word-wrap: break-word;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    .bot-bubble {
-        background-color: #e5e5ea;  /* light gray like iMessage */
-        color: black;
-        padding: 14px 18px;
-        border-radius: 22px;
-        max-width: 70%;
-        margin: 6px 0;
-        word-wrap: break-word;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     /* Input box */
@@ -78,29 +86,30 @@ def main():
         border-radius: 25px;
         padding: 12px 20px;
         font-size: 16px;
-        border: 1px solid #d1d1d6;
+        border: none;
+        background-color: #1b263b;
+        color: white;
     }
 
     /* Send button */
     .stButton button {
         border-radius: 25px;
         padding: 10px 28px;
-        background-color: #0a84ff;
+        background-color: #1f77b4;
         color: white;
         font-weight: bold;
         font-size: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         transition: all 0.3s ease;
     }
-
     .stButton button:hover {
-        background-color: #5ac8fa;
+        background-color: #3a86ff;
         transform: scale(1.05);
     }
 
-    /* Chat history sidebar */
+    /* Sidebar */
     [data-testid="stSidebar"] {
-        background-color: #4B0082;  /* Dark violet */
+        background-color: #162447;
         color: white;
         padding: 15px;
     }
@@ -115,7 +124,7 @@ def main():
     """, unsafe_allow_html=True)
 
     # ------------------- Header with Appointment Button -------------------
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([4,1])
     with col1:
         st.title("🩺 AI Healthcare Assistant")
         st.caption("An intelligent chatbot for general medical guidance. (Not a substitute for professional care)")
@@ -171,15 +180,9 @@ def main():
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         for role, msg in st.session_state.history:
             if role == "User":
-                st.markdown(
-                    f"<div class='user-bubble'>👤 <b>You:</b> {msg}</div>",
-                    unsafe_allow_html=True
-                )
+                st.markdown(f"<div class='user-bubble'>👤 {msg}</div>", unsafe_allow_html=True)
             else:
-                st.markdown(
-                    f"<div class='bot-bubble'>🤖 <b>Assistant:</b> {msg}</div>",
-                    unsafe_allow_html=True
-                )
+                st.markdown(f"<div class='bot-bubble'>🤖 {msg}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
