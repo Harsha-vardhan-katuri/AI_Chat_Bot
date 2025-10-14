@@ -1,15 +1,21 @@
 import streamlit as st
 import nltk
 from transformers import pipeline
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 
 # Download NLTK data
-nltk.download('punkt')
-nltk.download('stopwords')
+try:
+    nltk.data.find('tokenizers/punkt')
+except:
+    nltk.download('punkt')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except:
+    nltk.download('stopwords')
 
 # Load model
-chatbot = pipeline("text-generation", model="distilgpt2")
+chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
+
 
 # --- Chatbot logic ---
 def healthcare_chatbot(user_input):
@@ -33,35 +39,19 @@ def healthcare_chatbot(user_input):
 def main():
     st.set_page_config(page_title="Healthcare Assistant Chatbot", layout="wide")
 
-    # --- Custom Background and Styles ---
+    # --- CSS styles ---
     st.markdown("""
         <style>
-        /* Set a healthcare-themed background image */
+        /* Page background */
         [data-testid="stAppViewContainer"] {
-            background: url("https://cdn.pixabay.com/photo/2020/03/09/10/00/doctor-4911680_1280.png");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            color: white;
-        }
-
-        /* Transparent layer for readability */
-        [data-testid="stAppViewContainer"]::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: -1;
-        }
-
-        .stApp {
-            color: white;
+            background-color: #f5f5f5;
+            color: black;
         }
 
         /* Text input styling */
         .stTextInput > div > div > input {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: black;
             border-radius: 10px;
         }
 
@@ -102,14 +92,19 @@ def main():
 
         /* Sidebar */
         [data-testid="stSidebar"] {
-            background-color: rgba(30, 10, 50, 0.9);
-            color: white;
+            background-color: #e0e0e0;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("🩺 AI Healthcare Assistant")
-    st.caption("An intelligent chatbot for general medical guidance. (Not a substitute for professional care)")
+    # --- Header with Appointment Button ---
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.title("🩺 AI Healthcare Assistant")
+        st.caption("An intelligent chatbot for general medical guidance. (Not a substitute for professional care)")
+    with col2:
+        if st.button("📅 Book Appointment"):
+            st.session_state.show_appointment = True
 
     # Initialize session states
     if "history" not in st.session_state:
@@ -117,7 +112,7 @@ def main():
     if "show_appointment" not in st.session_state:
         st.session_state.show_appointment = False
 
-    # Sidebar for chat history
+    # --- Sidebar: Chat History ---
     with st.sidebar:
         st.header("📜 Chat History")
         if st.session_state.history:
@@ -125,10 +120,6 @@ def main():
                 st.write(f"**{role}:** {msg}")
         else:
             st.info("No chats yet!")
-
-        # Book appointment shortcut
-        if st.button("📅 Book Appointment"):
-            st.session_state.show_appointment = True
 
     # Chat input area
     user_input = st.text_input("💬 Enter your question:")
