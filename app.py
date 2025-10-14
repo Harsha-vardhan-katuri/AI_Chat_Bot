@@ -33,32 +33,77 @@ def healthcare_chatbot(user_input):
 def main():
     st.set_page_config(page_title="Healthcare Assistant Chatbot", layout="wide")
 
-    # Custom 3D background and styles
+    # --- Custom Background and Styles ---
     st.markdown("""
         <style>
-        body {
-            background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
-            background-attachment: fixed;
+        /* Set a healthcare-themed background image */
+        [data-testid="stAppViewContainer"] {
+            background: url("https://cdn.pixabay.com/photo/2020/03/09/10/00/doctor-4911680_1280.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white;
         }
+
+        /* Transparent layer for readability */
+        [data-testid="stAppViewContainer"]::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: -1;
+        }
+
         .stApp {
-            background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
             color: white;
         }
+
+        /* Text input styling */
         .stTextInput > div > div > input {
-            background-color: #1c1c1c;
+            background-color: rgba(255, 255, 255, 0.1);
             color: white;
             border-radius: 10px;
         }
+
+        /* Buttons styling */
         .stButton button {
-            background-color: #007bff;
+            background-color: #6C2DC7;
             color: white;
             border-radius: 10px;
+            font-weight: bold;
             transition: all 0.3s ease;
         }
+
         .stButton button:hover {
-            background-color: #0056b3;
+            background-color: #9A4DFF;
             transform: scale(1.05);
+        }
+
+        /* Chat containers */
+        .user-bubble {
+            background-color: #6C2DC7;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 16px;
+            margin: 8px 0;
+            width: fit-content;
+            text-align: left;
+        }
+
+        .bot-bubble {
+            background-color: #3D1259;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 16px;
+            margin: 8px 0;
+            width: fit-content;
+            text-align: left;
+        }
+
+        /* Sidebar */
+        [data-testid="stSidebar"] {
+            background-color: rgba(30, 10, 50, 0.9);
+            color: white;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -81,6 +126,10 @@ def main():
         else:
             st.info("No chats yet!")
 
+        # Book appointment shortcut
+        if st.button("📅 Book Appointment"):
+            st.session_state.show_appointment = True
+
     # Chat input area
     user_input = st.text_input("💬 Enter your question:")
 
@@ -102,8 +151,9 @@ def main():
         date = st.date_input("Select a date")
         time = st.time_input("Select a time")
         if st.button("Confirm Appointment"):
-            msg = f"✅ Appointment booked on {date} at {time}."
+            msg = f"✅ Appointment booked successfully on {date} at {time}."
             st.session_state.history.append(("Assistant", msg))
+            st.success(msg)
             st.session_state.show_appointment = False
 
     # Chat window display
@@ -113,14 +163,12 @@ def main():
         for role, msg in st.session_state.history:
             if role == "User":
                 st.markdown(
-                    f"<div style='background-color:#1e1e1e;padding:10px;border-radius:10px;margin:5px;text-align:right;'>"
-                    f"👤 <b>You:</b> {msg}</div>",
+                    f"<div class='user-bubble'>👤 <b>You:</b> {msg}</div>",
                     unsafe_allow_html=True
                 )
             else:
                 st.markdown(
-                    f"<div style='background-color:#2e2e2e;padding:10px;border-radius:10px;margin:5px;text-align:left;'>"
-                    f"🤖 <b>Assistant:</b> {msg}</div>",
+                    f"<div class='bot-bubble'>🤖 <b>Assistant:</b> {msg}</div>",
                     unsafe_allow_html=True
                 )
 
