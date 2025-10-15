@@ -61,7 +61,7 @@ st.markdown(
 .sub {
     color: #c9d8ea;
     margin-top: -6px;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 /* Quick actions row: reduce gap and margin */
@@ -69,7 +69,7 @@ st.markdown(
     display:flex;
     gap:6px;
     align-items:center;
-    margin-bottom:6px;
+    margin-bottom:4px;
 }
 
 /* Quick action buttons */
@@ -88,37 +88,38 @@ st.markdown(
 }
 
 /* Layout columns spacing */
-.block-left { padding-right: 12px; }
-.block-right { padding-left: 12px; }
+.block-left { padding-right: 6px; }
+.block-right { padding-left: 6px; }
 
-/* Chat container box */
+/* Chat container box directly below input */
 .chat-box {
     display:flex;
-    flex-direction:column-reverse; /* messages appear below input */
+    flex-direction:column-reverse; 
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     border-radius: 12px;
-    padding: 12px;
+    padding: 8px;
     min-height: 520px;
     max-height: 72vh;
     overflow-y: auto;
+    margin-top:0px;
 }
 
 /* messages list */
 .messages {
     overflow-y: auto;
-    padding-right: 6px;
-    padding-bottom: 6px;
+    padding-right: 4px;
+    padding-bottom: 4px;
     flex: 1 1 auto;
 }
 
 /* message bubbles */
-.msg-row { display:flex; margin-bottom:8px; align-items:flex-end; }
+.msg-row { display:flex; margin-bottom:6px; align-items:flex-end; }
 .msg-row.user { justify-content: flex-end; }
 .msg-row.bot { justify-content: flex-start; }
 
 .bubble {
     max-width: 72%;
-    padding: 10px 14px;
+    padding: 8px 12px;
     border-radius: 14px;
     font-size: 14px;
     line-height: 1.3;
@@ -143,9 +144,9 @@ st.markdown(
 
 /* sticky input area at bottom */
 .input-area {
-    margin-top: 6px;
+    margin-top: 4px;
     display:flex;
-    gap:6px;
+    gap:4px;
     align-items:center;
     flex-shrink:0;
 }
@@ -154,29 +155,30 @@ st.markdown(
     border: 1px solid rgba(255,255,255,0.04);
     color: #e6eef8;
     border-radius: 12px;
-    padding: 10px 12px;
+    padding: 8px 10px;
 }
 
 /* send button */
 .send-btn .stButton>button {
     background: linear-gradient(180deg,#6fb3ff,#2f7bd9);
     color:white;
-    padding: 8px 14px;
+    padding: 6px 12px;
     border-radius: 10px;
     border:none;
     box-shadow: 0 4px 12px rgba(47,123,217,0.3);
 }
 
-/* right panel upload & appointments */
+/* right panel upload & appointments aligned top */
 .right-panel {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     border-radius: 12px;
-    padding: 12px;
+    padding: 8px;
     height: 72vh;
+    margin-top:0px;
 }
 .right-panel .panel-title {
     margin-top: 0px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 /* keyframes */
@@ -199,25 +201,17 @@ header { visibility: hidden; }
 )
 
 # ---------------- Model Loading ----------------
-MODEL_NAME = "microsoft/BioGPT"
+MODEL_NAME = "distilgpt2"  # only distilgpt2 now
 device = 0 if torch.cuda.is_available() else -1
 
 @st.cache_resource(show_spinner=False)
 def load_generation_pipeline():
-    try:
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
-        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
-        return pipe, MODEL_NAME
-    except Exception as e:
-        fallback = "distilgpt2"
-        tokenizer = AutoTokenizer.from_pretrained(fallback)
-        model = AutoModelForCausalLM.from_pretrained(fallback)
-        pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
-        st.warning(f"BioGPT load failed ({str(e)[:200]}). Using {fallback} instead.")
-        return pipe, fallback
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=device)
+    return pipe, MODEL_NAME
 
-with st.spinner("Loading medical model..."):
+with st.spinner("Loading model..."):
     gen_pipe, loaded_model_name = load_generation_pipeline()
 
 # ---------------- Utilities ----------------
@@ -240,11 +234,11 @@ def generate_answer(prompt, max_len=200):
         return "Sorry — I couldn't generate an answer right now."
 
 # ---------------- Layout ----------------
-left_col, right_col = st.columns([3,1], gap="large")
+left_col, right_col = st.columns([3,1], gap="small")
 
 with left_col:
     st.markdown('<div class="main-title">🩺 AI Healthcare Assistant</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub">Your medical aid for common queries — not a replacement for a clinician.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub">Your digital medical aid — not a replacement for a clinician.</div>', unsafe_allow_html=True)
 
     # Quick actions
     cols = st.columns([1,1,1,1,1], gap="small")
@@ -305,16 +299,15 @@ with left_col:
 
 with right_col:
     st.markdown('<div class="right-panel">', unsafe_allow_html=True)
-
     st.markdown('<div class="panel-title">📤 Upload Image / Video</div>', unsafe_allow_html=True)
-    uploaded = st.file_uploader("Upload (image/video)", type=["png","jpg","jpeg","mp4","mov"], key="upload")
+    uploaded = st.file_uploader("", type=["png","jpg","jpeg","mp4","mov"], key="upload")
     if uploaded is not None:
         if uploaded.type.startswith("image"):
             st.image(uploaded, use_column_width=True)
         elif uploaded.type.startswith("video"):
             st.video(uploaded)
-    st.markdown('<hr>', unsafe_allow_html=True)
 
+    st.markdown('<hr>', unsafe_allow_html=True)
     st.markdown('<div class="panel-title">📅 Appointments</div>', unsafe_allow_html=True)
     if st.session_state.show_appointment:
         st.info("Appointment panel is open.")
