@@ -1,0 +1,18 @@
+[
+  [
+    "User",
+    "Cold"
+  ],
+  [
+    "Assistant",
+    "For a mild cold, steam inhalation and antihistamine (like cetirizine) can help."
+  ],
+  [
+    "User",
+    "Pain"
+  ],
+  [
+    "Assistant",
+    "For mild pain, over-the-counter analgesics like ibuprofen (after food) can help; seek medical advice for persistent pain."
+  ]
+]
