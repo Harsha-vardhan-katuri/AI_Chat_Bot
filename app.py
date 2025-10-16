@@ -1,5 +1,10 @@
 import streamlit as st
 from datetime import datetime
+from transformers import pipeline
+
+# Use CPU
+chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
+
 
 # ---------------------- PAGE CONFIG ----------------------
 st.set_page_config(page_title="Digital GPT - AI Health Assistant", layout="wide")
@@ -66,6 +71,58 @@ header_left, header_right = st.columns([2.5, 1])
 with header_left:
     st.markdown("## 🩺 Digital GPT - AI Health Assistant")
     st.markdown("Your personal assistant for basic health guidance, diet tips, and symptom insights.")
+    # ---------------------- QUICK ACTIONS ----------------------
+    qa_left, _ = st.columns([2.5, 1])  # same ratio as header
+    st.markdown("### ⚡ Quick Actions")
+    qa_cols = st.columns(5)
+    qa_cols[0].button("💧 Hydration Tips")
+    qa_cols[1].button("🍎 Diet Advice")
+    qa_cols[2].button("💤 Sleep Help")
+    qa_cols[3].button("💪 Fitness")
+    qa_cols[4].button("🧹 Clear Chat", on_click=lambda: st.session_state.clear())
+    # ---------------------- QUERY SECTION ----------------------
+    st.markdown("### Ask me anything about your health:")
+    col_query = st.columns([4, 1])
+    user_input = col_query[0].text_input("", placeholder="Type your question here...", label_visibility="collapsed")
+    send_button = col_query[1].button("Send")
+
+    # ---------------------- SIMPLE REPLY ENGINE ----------------------
+    def get_bot_reply(user_text):
+        text = user_text.lower()
+        if "cold" in text:
+            return "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
+        elif "pain" in text:
+            return "💊 For mild pain, rest and hydration help. If severe, visit a physician."
+        elif "diet" in text:
+            return "🥗 Include fruits, vegetables, proteins, and avoid junk food."
+        elif "sleep" in text:
+            return "😴 Keep a regular sleep schedule and avoid caffeine late in the day."
+        elif "fever" in text:
+            return "🌡️ Drink fluids, rest, and take paracetamol if needed."
+        else:
+            generated = chatbot(user_text, max_length=100, num_return_sequences=1)
+            return generated[0]['generated_text']
+
+    # ---------------------- CHAT LOGIC ----------------------
+    if send_button and user_input:
+        st.session_state.messages.append(("user", user_input))
+        st.session_state.messages.append(("bot", get_bot_reply(user_input)))
+
+    # ---------------------- CONVERSATION AREA ----------------------
+    conv_left, _ = st.columns([4, 1])
+    with conv_left:
+        st.markdown("### 💬 Conversation")
+        chat_container = st.container()
+        with chat_container:
+            if not st.session_state.messages:
+                st.info("Start by typing your health question above.")
+            else:
+                for sender, msg in st.session_state.messages:
+                    if sender == "user":
+                        st.markdown(f'<div class="chat-bubble-user">{msg}</div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown(f'<div class="chat-bubble-bot">{msg}</div>', unsafe_allow_html=True)
+
 
 with header_right:
     st.markdown("### 📤 Upload Image / Video")
@@ -84,52 +141,3 @@ with header_right:
             st.write(f"**Last query:** {last_user[-1]}")
     else:
         st.info("No chat history yet.")
-
-# ---------------------- QUICK ACTIONS ----------------------
-st.markdown("### ⚡ Quick Actions")
-qa_cols = st.columns(5)
-qa_cols[0].button("💧 Hydration Tips")
-qa_cols[1].button("🍎 Diet Advice")
-qa_cols[2].button("💤 Sleep Help")
-qa_cols[3].button("💪 Fitness")
-qa_cols[4].button("🧹 Clear Chat", on_click=lambda: st.session_state.clear())
-
-# ---------------------- QUERY SECTION ----------------------
-st.markdown("### Ask me anything about your health:")
-col_query = st.columns([6, 1])
-user_input = col_query[0].text_input("", placeholder="Type your question here...", label_visibility="collapsed")
-send_button = col_query[1].button("Send")
-
-# ---------------------- SIMPLE REPLY ENGINE ----------------------
-def get_bot_reply(user_text):
-    text = user_text.lower()
-    if "cold" in text:
-        return "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
-    elif "pain" in text:
-        return "💊 For mild pain, rest and hydration help. If severe, visit a physician."
-    elif "diet" in text:
-        return "🥗 Include fruits, vegetables, proteins, and avoid junk food."
-    elif "sleep" in text:
-        return "😴 Keep a regular sleep schedule and avoid caffeine late in the day."
-    elif "fever" in text:
-        return "🌡️ Drink fluids, rest, and take paracetamol if needed."
-    else:
-        return "💬 Please describe your symptoms for general guidance."
-
-# ---------------------- CHAT LOGIC ----------------------
-if send_button and user_input:
-    st.session_state.messages.append(("user", user_input))
-    st.session_state.messages.append(("bot", get_bot_reply(user_input)))
-
-# ---------------------- CONVERSATION AREA ----------------------
-st.markdown("### 💬 Conversation")
-chat_container = st.container()
-with chat_container:
-    if not st.session_state.messages:
-        st.info("Start by typing your health question above.")
-    else:
-        for sender, msg in st.session_state.messages:
-            if sender == "user":
-                st.markdown(f'<div class="chat-bubble-user">{msg}</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div class="chat-bubble-bot">{msg}</div>', unsafe_allow_html=True)
