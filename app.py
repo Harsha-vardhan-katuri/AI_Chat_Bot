@@ -68,7 +68,6 @@ h1,h2,h3,h4 {color:white;}
 }
 </style>
 
-<!-- Floating Bubbles -->
 <div class="bubble b1"></div>
 <div class="bubble b2"></div>
 """, unsafe_allow_html=True)
@@ -86,25 +85,37 @@ header_left, header_right = st.columns([2.5, 1])
 with header_left:
     st.markdown("## 🩺 Digital GPT - AI Health Assistant")
     st.markdown("Your personal assistant for basic health guidance, diet tips, and symptom insights.")
-    
+
+    # ---------------------- PREDEFINED QUICK ACTION RESPONSES ----------------------
+    predefined_responses = {
+        "💧 Hydration Tips": "💧 Drink at least 8 glasses of water daily and stay hydrated.",
+        "🍎 Diet Advice": "🥗 Include fruits, vegetables, proteins, and avoid junk food.",
+        "💤 Sleep Help": "😴 Maintain a regular sleep schedule, avoid caffeine late in the day.",
+        "💪 Fitness": "🏋️ Regular exercise, stretching, and staying active improve health."
+    }
+
     # ---------------------- QUICK ACTIONS ----------------------
     st.markdown("### ⚡ Quick Actions")
     qa_cols = st.columns(5)
-    qa_cols[0].button("💧 Hydration Tips")
-    qa_cols[1].button("🍎 Diet Advice")
-    qa_cols[2].button("💤 Sleep Help")
-    qa_cols[3].button("💪 Fitness")
+
+    def quick_action(action_name):
+        reply = predefined_responses.get(action_name, "")
+        if not reply:
+            # fallback to GPT
+            reply = get_bot_reply(action_name)
+        st.session_state.messages.append(("user", action_name))
+        st.session_state.messages.append(("bot", reply))
+
+    for i, key in enumerate(predefined_responses.keys()):
+        qa_cols[i].button(key, on_click=lambda k=key: quick_action(k))
     qa_cols[4].button("🧹 Clear Chat", on_click=lambda: st.session_state.messages.clear())
 
     # ---------------------- USER INPUT ----------------------
     st.markdown("### Ask me anything about your health:")
-    col_query = st.columns([4, 1])
-    user_input = col_query[0].text_input("Your Question", placeholder="Type your question here...", label_visibility="visible")
-    send_button = col_query[1].button("Send")
 
-    # ---------------------- BOT REPLY FUNCTION ----------------------
     def get_bot_reply(user_text):
         text = user_text.lower()
+        # predefined checks
         if "cold" in text:
             return "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
         elif "pain" in text:
@@ -119,15 +130,26 @@ with header_left:
             generated = chatbot(user_text, max_length=100, num_return_sequences=1)
             return generated[0]['generated_text']
 
-    # ---------------------- CHAT LOGIC ----------------------
-    if send_button and user_input:
-        st.session_state.messages.append(("user", user_input))
-        st.session_state.typing = True
-        with st.spinner("🤖 Digital GPT is typing..."):
-            time.sleep(1.5)
-            reply = get_bot_reply(user_input)
-            st.session_state.messages.append(("bot", reply))
-        st.session_state.typing = False
+    def send_message():
+        user_text = st.session_state.user_input_box
+        if user_text:
+            st.session_state.messages.append(("user", user_text))
+            st.session_state.typing = True
+            with st.spinner("🤖 Digital GPT is typing..."):
+                time.sleep(1.5)
+                reply = get_bot_reply(user_text)
+                st.session_state.messages.append(("bot", reply))
+            st.session_state.typing = False
+        # Clear input safely
+        st.session_state.user_input_box = ""
+
+    col_query = st.columns([4, 1])
+    col_query[0].text_input(
+        "Your Question",
+        placeholder="Type your question here...",
+        key="user_input_box"
+    )
+    col_query[1].button("Send", on_click=send_message)
 
     # ---------------------- CONVERSATION AREA ----------------------
     st.markdown("### 💬 Conversation")
