@@ -79,6 +79,29 @@ if "messages" not in st.session_state:
 if "typing" not in st.session_state:
     st.session_state.typing = False
 
+# ---------------------- BOT REPLY FUNCTION ----------------------
+def get_bot_reply(user_text):
+    text = user_text.lower()
+    # predefined health checks
+    if "cold" in text:
+        return "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
+    elif "pain" in text:
+        return "💊 For mild pain, rest and hydration help. If severe, visit a physician."
+    elif "diet" in text:
+        return "🥗 Include fruits, vegetables, proteins, and avoid junk food."
+    elif "sleep" in text:
+        return "😴 Keep a regular sleep schedule and avoid caffeine late in the day."
+    elif "fever" in text:
+        return "🌡️ Drink fluids, rest, and take paracetamol if needed."
+    elif "fitness" in text:
+        return "🏋️ Regular exercise, stretching, and staying active improve health."
+    elif "hydration" in text or "water" in text:
+        return "💧 Drink at least 8 glasses of water daily and stay hydrated."
+    else:
+        # fallback to GPT
+        generated = chatbot(user_text, max_length=100, num_return_sequences=1)
+        return generated[0]['generated_text']
+
 # ---------------------- HEADER ----------------------
 header_left, header_right = st.columns([2.5, 1])
 
@@ -86,51 +109,29 @@ with header_left:
     st.markdown("## 🩺 Digital GPT - AI Health Assistant")
     st.markdown("Your personal assistant for basic health guidance, diet tips, and symptom insights.")
 
-    # ---------------------- PREDEFINED QUICK ACTION RESPONSES ----------------------
-    predefined_responses = {
-        "💧 Hydration Tips": "💧 Drink at least 8 glasses of water daily and stay hydrated.",
-        "🍎 Diet Advice": "🥗 Include fruits, vegetables, proteins, and avoid junk food.",
-        "💤 Sleep Help": "😴 Maintain a regular sleep schedule, avoid caffeine late in the day.",
-        "💪 Fitness": "🏋️ Regular exercise, stretching, and staying active improve health."
-    }
-
     # ---------------------- QUICK ACTIONS ----------------------
     st.markdown("### ⚡ Quick Actions")
-    qa_cols = st.columns(5)
 
-    def quick_action(action_name):
-        reply = predefined_responses.get(action_name, "")
-        if not reply:
-            # fallback to GPT
-            reply = get_bot_reply(action_name)
+    def handle_quick_action(action_name):
+        """When a quick action is clicked, it checks predefined and then GPT."""
         st.session_state.messages.append(("user", action_name))
-        st.session_state.messages.append(("bot", reply))
+        with st.spinner("🤖 Digital GPT is typing..."):
+            time.sleep(1.2)
+            reply = get_bot_reply(action_name)
+            st.session_state.messages.append(("bot", reply))
 
-    for i, key in enumerate(predefined_responses.keys()):
-        qa_cols[i].button(key, on_click=lambda k=key: quick_action(k))
+    qa_cols = st.columns(5)
+    qa_cols[0].button("💧 Hydration Tips", on_click=lambda: handle_quick_action("Hydration Tips"))
+    qa_cols[1].button("🍎 Diet Advice", on_click=lambda: handle_quick_action("Diet Advice"))
+    qa_cols[2].button("💤 Sleep Help", on_click=lambda: handle_quick_action("Sleep Help"))
+    qa_cols[3].button("💪 Fitness", on_click=lambda: handle_quick_action("Fitness Tips"))
     qa_cols[4].button("🧹 Clear Chat", on_click=lambda: st.session_state.messages.clear())
 
     # ---------------------- USER INPUT ----------------------
     st.markdown("### Ask me anything about your health:")
 
-    def get_bot_reply(user_text):
-        text = user_text.lower()
-        # predefined checks
-        if "cold" in text:
-            return "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
-        elif "pain" in text:
-            return "💊 For mild pain, rest and hydration help. If severe, visit a physician."
-        elif "diet" in text:
-            return "🥗 Include fruits, vegetables, proteins, and avoid junk food."
-        elif "sleep" in text:
-            return "😴 Keep a regular sleep schedule and avoid caffeine late in the day."
-        elif "fever" in text:
-            return "🌡️ Drink fluids, rest, and take paracetamol if needed."
-        else:
-            generated = chatbot(user_text, max_length=100, num_return_sequences=1)
-            return generated[0]['generated_text']
-
     def send_message():
+        """Handles user text input and bot response."""
         user_text = st.session_state.user_input_box
         if user_text:
             st.session_state.messages.append(("user", user_text))
@@ -140,15 +141,12 @@ with header_left:
                 reply = get_bot_reply(user_text)
                 st.session_state.messages.append(("bot", reply))
             st.session_state.typing = False
-        # Clear input safely
+        # clear input after send
         st.session_state.user_input_box = ""
 
     col_query = st.columns([4, 1])
-    col_query[0].text_input(
-        "Your Question",
-        placeholder="Type your question here...",
-        key="user_input_box"
-    )
+    col_query[0].text_input("Your Question", placeholder="Type your question here...",
+                            key="user_input_box")
     col_query[1].button("Send", on_click=send_message)
 
     # ---------------------- CONVERSATION AREA ----------------------
@@ -161,9 +159,13 @@ with header_left:
             for sender, msg in st.session_state.messages:
                 timestamp = datetime.now().strftime("%H:%M")
                 if sender == "user":
-                    st.markdown(f'<div class="chat-bubble-user">{msg}<div style="font-size:10px;color:#ccc;">{timestamp}</div></div>', unsafe_allow_html=True)
+                    st.markdown(
+                        f'<div class="chat-bubble-user">{msg}<div style="font-size:10px;color:#ccc;">{timestamp}</div></div>',
+                        unsafe_allow_html=True)
                 else:
-                    st.markdown(f'<div class="chat-bubble-bot">{msg}<div style="font-size:10px;color:#ccc;">{timestamp}</div></div>', unsafe_allow_html=True)
+                    st.markdown(
+                        f'<div class="chat-bubble-bot">{msg}<div style="font-size:10px;color:#ccc;">{timestamp}</div></div>',
+                        unsafe_allow_html=True)
 
 # ---------------------- RIGHT PANEL ----------------------
 with header_right:
