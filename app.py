@@ -2,6 +2,7 @@ import streamlit as st
 import time
 from datetime import datetime
 from transformers import pipeline
+from googletrans import Translator
 
 # ---------------------- MODEL ----------------------
 chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
@@ -79,59 +80,150 @@ if "messages" not in st.session_state:
 if "typing" not in st.session_state:
     st.session_state.typing = False
 
+# ---------------------- TRANSLATION SETUP ----------------------
+translator = Translator()
+languages = {
+    "English": "en",
+    "Hindi": "hi",
+    "Telugu": "te",
+    "Tamil": "ta",
+    "Kannada": "kn"
+}
+
+# ---------------------- MULTILINGUAL TEXTS ----------------------
+multilingual_texts = {
+    "English": {
+        "app_title": "Digital GPT - AI Health Assistant",
+        "description": "Your personal assistant for basic health guidance, diet tips, and symptom insights.",
+        "ask_question": "Ask me anything about your health:",
+        "placeholder": "Type your question here...",
+        "send": "Send",
+        "quick_actions": ["Hydration Tips", "Diet Advice", "Sleep Help", "Fitness Tips", "Clear Chat"],
+        "upload_file": "Upload file",
+        "book_appointment": "Book Appointment",
+        "select_date": "Select a date",
+        "select_time": "Select time",
+        "confirm_appointment": "Confirm Appointment",
+        "no_chat": "Start by typing your health question above.",
+        "chat_history": "Chat History Summary",
+        "last_query": "Last query:"
+    },
+    "Telugu": {
+        "app_title": "డిజిటల్ GPT – AI ఆరోగ్య సహాయకుడు",
+        "description": "మీ వ్యక్తిగత సహాయకుడు, మౌలిక ఆరోగ్య మార్గనిర్దేశనం, డైట్ సూచనలు, లక్షణాల సమాచారం కోసం.",
+        "ask_question": "మీ ఆరోగ్యం గురించి ఏదైనా అడగండి:",
+        "placeholder": "ఇక్కడ మీ ప్రశ్న టైప్ చేయండి...",
+        "send": "పంపండి",
+        "quick_actions": ["హైడ్రేషన్ సూచనలు", "ఆహార సలహాలు", "నిద్ర సహాయం", "ఫిట్‌నెస్ సూచనలు", "చాట్ క్లియర్ చేయండి"],
+        "upload_file": "ఫైల్‌ను అప్‌లోడ్ చేయండి",
+        "book_appointment": "నియామకం بک చేయండి",
+        "select_date": "తేదీ ఎంచుకోండి",
+        "select_time": "సమయం ఎంచుకోండి",
+        "confirm_appointment": "నియామకం నిర్ధారించండి",
+        "no_chat": "పై లో మీ ఆరోగ్య ప్రశ్నను టైప్ చేయడం మొదలు పెట్టండి.",
+        "chat_history": "చాట్ చరిత్ర సారాంశం",
+        "last_query": "తుది ప్రశ్న:"
+    },
+    "Hindi": {
+        "app_title": "डिजिटल GPT – AI स्वास्थ्य सहायक",
+        "description": "आपका व्यक्तिगत सहायक, बुनियादी स्वास्थ्य मार्गदर्शन, आहार सुझाव और लक्षण जानकारी के लिए।",
+        "ask_question": "अपने स्वास्थ्य के बारे में कुछ भी पूछें:",
+        "placeholder": "अपना प्रश्न यहाँ टाइप करें...",
+        "send": "भेजें",
+        "quick_actions": ["पानी पीने के सुझाव", "आहार सलाह", "नींद मदद", "फिटनेस सुझाव", "चैट साफ़ करें"],
+        "upload_file": "फ़ाइल अपलोड करें",
+        "book_appointment": "अपॉइंटमेंट बुक करें",
+        "select_date": "तारीख चुनें",
+        "select_time": "समय चुनें",
+        "confirm_appointment": "अपॉइंटमेंट कन्फ़र्म करें",
+        "no_chat": "ऊपर अपने स्वास्थ्य प्रश्न टाइप करके शुरू करें।",
+        "chat_history": "चैट इतिहास सारांश",
+        "last_query": "अंतिम प्रश्न:"
+    },
+    "Kannada": {
+        "app_title": "ಡಿಜಿಟಲ್ GPT – AI ಆರೋಗ್ಯ ಸಹಾಯಕ",
+        "description": "ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಸಹಾಯಕ, ಮೂಲ ಆರೋಗ್ಯ ಮಾರ್ಗದರ್ಶನ, ಆಹಾರ ಸಲಹೆಗಳು ಮತ್ತು ಲಕ್ಷಣಗಳ ಮಾಹಿತಿಗಾಗಿ.",
+        "ask_question": "ನಿಮ್ಮ ಆರೋಗ್ಯದ ಬಗ್ಗೆ ಏನಾದರೂ ಕೇಳಿ:",
+        "placeholder": "ಇಲ್ಲಿ ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ...",
+        "send": "ಕಳುಹಿಸಿ",
+        "quick_actions": ["ಹೈಡ್ರೇಶನ್ ಸಲಹೆಗಳು", "ಆಹಾರ ಸಲಹೆಗಳು", "ನಿದ್ದೆ ಸಹಾಯ", "ಫಿಟ್ನೆಸ್ ಸಲಹೆಗಳು", "ಚಾಟ್ ಕ್ಲೀರ್ ಮಾಡಿ"],
+        "upload_file": "ಫೈಲ್ ಅಪ್ಲೋಡ್ ಮಾಡಿ",
+        "book_appointment": "ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ",
+        "select_date": "ದಿನಾಂಕ ಆಯ್ಕೆಮಾಡಿ",
+        "select_time": "ಸಮಯ ಆಯ್ಕೆಮಾಡಿ",
+        "confirm_appointment": "ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ದೃಢೀಕರಿಸಿ",
+        "no_chat": "ಮೇಲಿನ健康 ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ ಪ್ರಾರಂಭಿಸಿ.",
+        "chat_history": "ಚಾಟ್ ಇತಿಹಾಸ ಸಾರಾಂಶ",
+        "last_query": "ಕೊನೆಯ ಪ್ರಶ್ನೆ:"
+    },
+    # Add Hindi, Tamil, Kannada similarly
+}
+
+# ---------------------- TOP BAR WITH LANGUAGE SELECTION ----------------------
+top_left, top_right = st.columns([3, 1])
+with top_right:
+    selected_language = st.selectbox("🌐 Language", list(languages.keys()))
+
+texts = multilingual_texts[selected_language]
+
 # ---------------------- BOT REPLY FUNCTION ----------------------
 def get_bot_reply(user_text):
     text = user_text.lower()
-    # predefined health checks
+
+    # Translate input to English if needed
+    if selected_language != "English":
+        user_text = translator.translate(user_text, dest='en').text
+        text = user_text.lower()
+
+    # Predefined responses
     if "cold" in text:
-        return "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
+        reply = "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
     elif "pain" in text:
-        return "💊 For mild pain, rest and hydration help. If severe, visit a physician."
+        reply = "💊 For mild pain, rest and hydration help. If severe, visit a physician."
     elif "diet" in text:
-        return "🥗 Include fruits, vegetables, proteins, and avoid junk food."
+        reply = "🥗 Include fruits, vegetables, proteins, and avoid junk food."
     elif "sleep" in text:
-        return "😴 Keep a regular sleep schedule and avoid caffeine late in the day."
+        reply = "😴 Keep a regular sleep schedule and avoid caffeine late in the day."
     elif "fever" in text:
-        return "🌡️ Drink fluids, rest, and take paracetamol if needed."
+        reply = "🌡️ Drink fluids, rest, and take paracetamol if needed."
     elif "fitness" in text:
-        return "🏋️ Regular exercise, stretching, and staying active improve health."
+        reply = "🏋️ Regular exercise, stretching, and staying active improve health."
     elif "hydration" in text or "water" in text:
-        return "💧 Drink at least 8 glasses of water daily and stay hydrated."
+        reply = "💧 Drink at least 8 glasses of water daily and stay hydrated."
     else:
         # fallback to GPT
         generated = chatbot(user_text, max_length=100, num_return_sequences=1)
-        return generated[0]['generated_text']
+        reply = generated[0]['generated_text']
+
+    # Translate reply back to selected language
+    if selected_language != "English":
+        reply = translator.translate(reply, dest=languages[selected_language]).text
+
+    return reply
 
 # ---------------------- HEADER ----------------------
 header_left, header_right = st.columns([2.5, 1])
 
 with header_left:
-    st.markdown("## 🩺 Digital GPT - AI Health Assistant")
-    st.markdown("Your personal assistant for basic health guidance, diet tips, and symptom insights.")
+    st.markdown(f"## 🩺 {texts['app_title']}")
+    st.markdown(texts['description'])
 
     # ---------------------- QUICK ACTIONS ----------------------
-    st.markdown("### ⚡ Quick Actions")
+    st.markdown(f"### ⚡ {texts['ask_question']}")
 
     def handle_quick_action(action_name):
-        """When a quick action is clicked, it checks predefined and then GPT."""
         st.session_state.messages.append(("user", action_name))
         with st.spinner("🤖 Digital GPT is typing..."):
             time.sleep(1.2)
             reply = get_bot_reply(action_name)
             st.session_state.messages.append(("bot", reply))
 
-    qa_cols = st.columns(5)
-    qa_cols[0].button("💧 Hydration Tips", on_click=lambda: handle_quick_action("Hydration Tips"))
-    qa_cols[1].button("🍎 Diet Advice", on_click=lambda: handle_quick_action("Diet Advice"))
-    qa_cols[2].button("💤 Sleep Help", on_click=lambda: handle_quick_action("Sleep Help"))
-    qa_cols[3].button("💪 Fitness", on_click=lambda: handle_quick_action("Fitness Tips"))
-    qa_cols[4].button("🧹 Clear Chat", on_click=lambda: st.session_state.messages.clear())
+    qa_cols = st.columns(len(texts['quick_actions']))
+    for i, action in enumerate(texts['quick_actions']):
+        qa_cols[i].button(action, on_click=lambda a=action: handle_quick_action(a))
 
     # ---------------------- USER INPUT ----------------------
-    st.markdown("### Ask me anything about your health:")
-
     def send_message():
-        """Handles user text input and bot response."""
         user_text = st.session_state.user_input_box
         if user_text:
             st.session_state.messages.append(("user", user_text))
@@ -141,20 +233,18 @@ with header_left:
                 reply = get_bot_reply(user_text)
                 st.session_state.messages.append(("bot", reply))
             st.session_state.typing = False
-        # clear input after send
-        st.session_state.user_input_box = ""
+            st.session_state.user_input_box = ""
 
     col_query = st.columns([4, 1])
-    col_query[0].text_input("Your Question", placeholder="Type your question here...",
-                            key="user_input_box")
-    col_query[1].button("Send", on_click=send_message)
+    user_input = col_query[0].text_input("", placeholder=texts['placeholder'], key="user_input_box")
+    col_query[1].button(texts['send'], on_click=send_message)
 
     # ---------------------- CONVERSATION AREA ----------------------
     st.markdown("### 💬 Conversation")
     chat_container = st.container()
     with chat_container:
         if not st.session_state.messages:
-            st.info("Start by typing your health question above.")
+            st.info(texts['no_chat'])
         else:
             for sender, msg in st.session_state.messages:
                 timestamp = datetime.now().strftime("%H:%M")
@@ -169,19 +259,19 @@ with header_left:
 
 # ---------------------- RIGHT PANEL ----------------------
 with header_right:
-    st.markdown("### 📤 Upload Image / Video")
-    st.file_uploader("Upload file", type=["png", "jpg", "jpeg", "mp4", "mov"], label_visibility="collapsed")
+    st.markdown(f"### 📤 {texts['upload_file']}")
+    st.file_uploader("", type=["png", "jpg", "jpeg", "mp4", "mov"], label_visibility="collapsed")
 
-    st.markdown("### 📅 Book Appointment")
-    appt_date = st.date_input("Select a date", datetime.now())
-    appt_time = st.time_input("Select time", datetime.now().time())
-    if st.button("Confirm Appointment"):
-        st.success(f"✅ Appointment booked for {appt_date} at {appt_time}.")
+    st.markdown(f"### 📅 {texts['book_appointment']}")
+    appt_date = st.date_input(texts['select_date'], datetime.now())
+    appt_time = st.time_input(texts['select_time'], datetime.now().time())
+    if st.button(texts['confirm_appointment']):
+        st.success(f"✅ {texts['confirm_appointment']} {appt_date} at {appt_time}.")
 
-    st.markdown("### 🕓 Chat History Summary")
+    st.markdown(f"### 🕓 {texts['chat_history']}")
     if st.session_state.messages:
         last_user = [msg for sender, msg in st.session_state.messages if sender == "user"]
         if last_user:
-            st.write(f"**Last query:** {last_user[-1]}")
+            st.write(f"**{texts['last_query']}** {last_user[-1]}")
     else:
-        st.info("No chat history yet.")
+        st.info(texts['no_chat'])
