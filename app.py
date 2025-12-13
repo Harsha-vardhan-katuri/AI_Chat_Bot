@@ -10,68 +10,99 @@ chatbot = pipeline("text-generation", model="distilgpt2", device=-1)
 # ---------------------- PAGE CONFIG ----------------------
 st.set_page_config(page_title="Digital GPT - AI Health Assistant", layout="wide")
 
+# =====================================================
+# 🔧 ADDED: CSS load flag (ONLY ADDITION)
+# =====================================================
+if "css_loaded" not in st.session_state:
+    st.session_state.css_loaded = False
+
 # ---------------------- CUSTOM CSS ----------------------
-st.markdown("""
-<style>
-/* Animated Gradient Background */
-.stApp {
-    background: linear-gradient(270deg, #00264d, #003366, #004080);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-    color: white;
-}
-@keyframes gradientShift {
-  0% {background-position: 0% 50%;}
-  50% {background-position: 100% 50%;}
-  100% {background-position: 0% 50%;}
-}
+if not st.session_state.css_loaded:  # 🔧 ADDED
+    st.markdown("""
+    <style>
+    /* Animated Gradient Background */
+    .stApp {
+        background: linear-gradient(270deg, #00264d, #003366, #004080);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+        color: white;
+    }
+    @keyframes gradientShift {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
 
-/* Floating Bubbles */
-.bubble {
-    position: fixed;
-    border-radius: 50%;
-    opacity: 0.2;
-    animation: floatUp 20s infinite;
-}
-@keyframes floatUp {
-  from {transform: translateY(100vh);}
-  to {transform: translateY(-10vh);}
-}
-.b1 {width: 120px; height: 120px; background: #00bcd4; left: 10%; animation-delay: 2s;}
-.b2 {width: 80px; height: 80px; background: #ff4081; left: 60%; animation-delay: 4s;}
+    /* Floating Bubbles */
+    .bubble {
+        position: fixed;
+        border-radius: 50%;
+        opacity: 0.2;
+        animation: floatUp 20s infinite;
+    }
+    @keyframes floatUp {
+      from {transform: translateY(100vh);}
+      to {transform: translateY(-10vh);}
+    }
+    .b1 {width: 120px; height: 120px; background: #00bcd4; left: 10%; animation-delay: 2s;}
+    .b2 {width: 80px; height: 80px; background: #ff4081; left: 60%; animation-delay: 4s;}
 
-/* Fonts and Typography */
-h1,h2,h3,h4 {color:white;}
-.stTextInput > div > div > input {
-    background-color: #1e2a38; color: white; border: 1px solid #333; border-radius: 6px; padding: 10px;
-}
-.stButton > button {
-    background-color: #0052cc; color: white; border: none; border-radius: 6px; padding: 8px 20px; transition: 0.3s;
-}
-.stButton > button:hover {
-    background-color: #007bff; transform: scale(1.05); box-shadow: 0px 0px 10px rgba(0,123,255,0.6);
-}
+    /* Fonts and Typography */
+    h1,h2,h3,h4 {color:white;}
+    .stTextInput > div > div > input {
+        background-color: #1e2a38; color: white;
+        border: 1px solid #333; border-radius: 6px; padding: 10px;
+    }
+    .stButton > button {
+        background-color: #0052cc; color: white;
+        border: none; border-radius: 6px; padding: 8px 20px; transition: 0.3s;
+    }
+    .stButton > button:hover {
+        background-color: #007bff;
+        transform: scale(1.05);
+        box-shadow: 0px 0px 10px rgba(0,123,255,0.6);
+    }
 
-/* Chat bubbles */
-.chat-bubble-user {
-    background-color: #0052cc; padding: 10px; border-radius: 10px; margin: 5px 0; color: white; text-align: right;
-    animation: slideInRight 0.5s ease-out;
-}
-.chat-bubble-bot {
-    background-color: #1e2a38; padding: 10px; border-radius: 10px; margin: 5px 0; text-align: left;
-    animation: slideInLeft 0.5s ease-out;
-}
-@keyframes slideInRight { from {opacity: 0; transform: translateX(50px);} to {opacity: 1; transform: translateX(0);} }
-@keyframes slideInLeft { from {opacity: 0; transform: translateX(-50px);} to {opacity: 1; transform: translateX(0);} }
+    /* Chat bubbles */
+    .chat-bubble-user {
+        background-color: #0052cc;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px 0;
+        color: white;
+        text-align: right;
+        animation: slideInRight 0.5s ease-out;
+    }
+    .chat-bubble-bot {
+        background-color: #1e2a38;
+        padding: 10px;
+        border-radius: 10px;
+        margin: 5px 0;
+        text-align: left;
+        animation: slideInLeft 0.5s ease-out;
+    }
+    @keyframes slideInRight {
+        from {opacity: 0; transform: translateX(50px);}
+        to {opacity: 1; transform: translateX(0);}
+    }
+    @keyframes slideInLeft {
+        from {opacity: 0; transform: translateX(-50px);}
+        to {opacity: 1; transform: translateX(0);}
+    }
 
-.section {
-    background-color: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 10px; margin-bottom: 15px;
-}
-</style>
+    .section {
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+    </style>
 
-<div class="bubble b1"></div>
-<div class="bubble b2"></div>
-""", unsafe_allow_html=True)
+    <div class="bubble b1"></div>
+    <div class="bubble b2"></div>
+    """, unsafe_allow_html=True)
+
+    st.session_state.css_loaded = True  # 🔧 ADDED
 
 # ---------------------- SESSION STATE ----------------------
 if "messages" not in st.session_state:
@@ -171,8 +202,7 @@ multilingual_texts = {
         "no_chat": "ಮೇಲಿನ健康 ಪ್ರಶ್ನೆಯನ್ನು ಟೈಪ್ ಮಾಡಿ ಪ್ರಾರಂಭಿಸಿ.",
         "chat_history": "ಚಾಟ್ ಇತಿಹಾಸ ಸಾರಾಂಶ",
         "last_query": "ಕೊನೆಯ ಪ್ರಶ್ನೆ:"
-    },
-    # Add Hindi, Tamil, Kannada similarly
+    }
 }
 
 # ---------------------- TOP BAR WITH LANGUAGE SELECTION ----------------------
@@ -186,12 +216,10 @@ texts = multilingual_texts[selected_language]
 def get_bot_reply(user_text):
     text = user_text.lower()
 
-    # Translate input to English if needed
     if selected_language != "English":
         user_text = translator.translate(user_text, dest='en').text
         text = user_text.lower()
 
-    # Predefined responses
     if "cold" in text:
         reply = "🤧 Try steam inhalation and stay hydrated. For persistent cold, consult a doctor."
     elif "pain" in text:
@@ -207,11 +235,9 @@ def get_bot_reply(user_text):
     elif "hydration" in text or "water" in text:
         reply = "💧 Drink at least 8 glasses of water daily and stay hydrated."
     else:
-        # fallback to GPT
         generated = chatbot(user_text, max_length=100, num_return_sequences=1)
         reply = generated[0]['generated_text']
 
-    # Translate reply back to selected language
     if selected_language != "English":
         reply = translator.translate(reply, dest=languages[selected_language]).text
 
@@ -220,42 +246,44 @@ def get_bot_reply(user_text):
 # ---------------------- HEADER ----------------------
 header_left, header_right = st.columns([2.5, 1])
 
+# 🔧 ADDED (placeholder for spinner UI only)
+typing_placeholder = st.empty()
+
 with header_left:
     st.markdown(f"## 🩺 {texts['app_title']}")
     st.markdown(texts['description'])
 
-    # ---------------------- QUICK ACTIONS ----------------------
     st.markdown(f"### ⚡ {texts['ask_question']}")
 
     def handle_quick_action(action_name):
         st.session_state.messages.append(("user", action_name))
-        with st.spinner("🤖 Digital GPT is typing..."):
-            time.sleep(1.2)
-            reply = get_bot_reply(action_name)
-            st.session_state.messages.append(("bot", reply))
+        typing_placeholder.markdown("🤖 **Digital GPT is typing...**")  # 🔧 ADDED
+        time.sleep(1.2)
+        reply = get_bot_reply(action_name)
+        typing_placeholder.empty()  # 🔧 ADDED
+        st.session_state.messages.append(("bot", reply))
 
     qa_cols = st.columns(len(texts['quick_actions']))
     for i, action in enumerate(texts['quick_actions']):
         qa_cols[i].button(action, on_click=lambda a=action: handle_quick_action(a))
 
-    # ---------------------- USER INPUT ----------------------
     def send_message():
         user_text = st.session_state.user_input_box
         if user_text:
             st.session_state.messages.append(("user", user_text))
             st.session_state.typing = True
-            with st.spinner("🤖 Digital GPT is typing..."):
-                time.sleep(1.5)
-                reply = get_bot_reply(user_text)
-                st.session_state.messages.append(("bot", reply))
+            typing_placeholder.markdown("🤖 **Digital GPT is typing...**")  # 🔧 ADDED
+            time.sleep(1.5)
+            reply = get_bot_reply(user_text)
+            typing_placeholder.empty()  # 🔧 ADDED
+            st.session_state.messages.append(("bot", reply))
             st.session_state.typing = False
             st.session_state.user_input_box = ""
 
     col_query = st.columns([4, 1])
-    user_input = col_query[0].text_input("", placeholder=texts['placeholder'], key="user_input_box")
+    col_query[0].text_input("", placeholder=texts['placeholder'], key="user_input_box")
     col_query[1].button(texts['send'], on_click=send_message)
 
-    # ---------------------- CONVERSATION AREA ----------------------
     st.markdown("### 💬 Conversation")
     chat_container = st.container()
     with chat_container:
