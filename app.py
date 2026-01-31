@@ -67,6 +67,26 @@ h1,h2,h3,h4 {color:white;}
 .section {
     background-color: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 10px; margin-bottom: 15px;
 }
+
+/* Responsive tweaks: mobile-first adjustments */
+@media (max-width: 768px) {
+  /* Disable heavy animations and floating bubbles on mobile */
+  .stApp { background: linear-gradient(270deg, #00264d, #003366, #004080); background-size: auto; }
+  .bubble { display: none; }
+  .stTextInput > div > div > input { padding: 12px; font-size: 18px; }
+  .stButton > button { width: 100%; padding: 12px; }
+  .chat-bubble-user, .chat-bubble-bot { max-width: 95%; padding: 12px; border-radius: 12px; }
+  .section { padding: 10px; }
+  /* Make header font slightly larger for readability */
+  h1,h2,h3,h4 { font-size: 1.05em; }
+}
+
+@media (min-width: 769px) {
+  /* Desktop: keep animations and constrained bubble widths */
+  .stApp { animation: gradientShift 15s ease infinite; }
+  .chat-bubble-user, .chat-bubble-bot { max-width: 60%; }
+  .bubble { opacity: 0.18; }
+}
 </style>
 
 <div class="bubble b1"></div>
