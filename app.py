@@ -272,7 +272,8 @@ with header_left:
             st.session_state.user_input_box = ""
 
     col_query = st.columns([4, 1])
-    user_input = col_query[0].text_input("", placeholder=texts['placeholder'], key="user_input_box")
+    # Use a multi-line input so long queries wrap on mobile and desktop
+    user_input = col_query[0].text_area("", placeholder=texts['placeholder'], key="user_input_box", height=80)
     col_query[1].button(texts['send'], on_click=send_message)
 
     # ---------------------- CONVERSATION AREA ----------------------
